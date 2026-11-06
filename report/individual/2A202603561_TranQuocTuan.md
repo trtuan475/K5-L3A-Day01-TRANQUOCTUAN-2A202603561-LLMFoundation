@@ -44,8 +44,35 @@
 
 ## 4. Phân tích 50 case khó
 
-*Model nào tụt nhiều nhất, ở nhóm case nào? Nêu 2 case cụ thể và cơ chế khiến model sai.*
+## 1. Mô hình bị tụt giảm hiệu năng nhiều nhất
 
+- **Mô hình bị tụt nhiều nhất:** Mô hình **1. BoW + LogReg (tự code)** và **2. BoW + MLP (deep learning)**.
+  - **BoW + LogReg:** Điểm F1 trên tập kiểm thử thường (SUB) đạt 0.889, nhưng khi đối mặt với 50 case khó, F1 giảm thê thảm xuống chỉ còn 0.294 (giảm gần 0.60 điểm F1).
+  - **BoW + MLP:** F1 từ 0.947 rơi xuống còn 0.343 (giảm 0.60 điểm F1).
+
+- **Nhóm case gây khó khăn lớn nhất:** Nhóm **Spam giống tự nhiên (natural_spam)** với tỉ lệ đoán đúng của mô hình BoW là 0.0% và nhóm **Né từ khóa (obfuscation)** với tỉ lệ đoán đúng chỉ 17%.
+
+- **Nguyên nhân tập test thường quá lạc quan:** Tập test thông thường được chia ngẫu nhiên từ cùng một phân phối dữ liệu với tập train. Do đó, các từ khóa đặc trưng của spam (như FREE, call, txt, claim) xuất hiện lặp đi lặp lại một cách rõ ràng trong cả hai tập, giúp các mô hình đơn giản dễ dàng ghi nhớ và đạt điểm số cao vượt trội.
+
+## 2. Hai trường hợp sai cụ thể và cơ chế gây lỗi
+
+### Trường hợp 1: Tin nhắn thuộc nhóm "Spam giống tự nhiên" (Thật = spam | BoW đoán = ham)
+
+- **Nội dung tin nhắn:** "Hey it's Jess from the gym 😊 we're doing a members-only thing this week, 3 months for the price of 1, just reply JOIN and I'll sort it"
+
+- **Cơ chế khiến model đoán sai:**
+  - Tin nhắn này được viết rất tự nhiên, đóng vai một người quen thân thiết tại phòng tập thể hình (gym) và không chứa bất kỳ từ khóa đẩy spam mạnh truyền thống nào có trong từ điển học được (như win, cash, award, urgent, reply YES).
+  - Đồng thời, nó chứa nhiều từ khóa kéo về nhãn ham mạnh (như i, me, my, we).
+  - Do mô hình Bag-of-Words (BoW) chỉ đếm tần suất xuất hiện của các từ riêng lẻ một cách độc lập mà không hiểu được cấu trúc ngữ nghĩa quảng cáo/lôi kéo tiềm ẩn, mô hình hoàn toàn tin rằng đây là tin nhắn cá nhân thông thường và gán nhãn ham.
+
+### Trường hợp 2: Tin nhắn thuộc nhóm "Tưởng spam nhưng không phải" (Thật = ham | BoW đoán = spam)
+
+- **Nội dung tin nhắn:** "Congrats!!! You WON the bet lol, I owe you a beer. Call me later"
+
+- **Cơ chế khiến model đoán sai:**
+  - Tin nhắn này chứa một loạt các từ khóa mang trọng số đẩy về phía spam cực mạnh đã học được từ tập train: congrats, WON và Call.
+  - Tuy nhiên, ngữ cảnh thực tế ở đây chỉ là hai người bạn đang trò chuyện và cá cược vui vẻ với nhau ("lol, I owe you a beer").
+  - Do mô hình BoW bị giới hạn trong việc liên kết các token độc lập và không thể phân tích được ngữ cảnh thân mật của câu, sự hiện diện của các từ viết hoa mạnh lập tức kích hoạt bộ lọc và khiến mô hình chặn nhầm một tin nhắn hoàn toàn bình thường.
 ## 5. Thử thách cá nhân
 
 *Đề theo SEED của bạn, cách làm, kết quả, giải thích.*
