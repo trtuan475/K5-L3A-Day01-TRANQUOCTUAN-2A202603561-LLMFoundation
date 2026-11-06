@@ -75,12 +75,73 @@
   - Do mô hình BoW bị giới hạn trong việc liên kết các token độc lập và không thể phân tích được ngữ cảnh thân mật của câu, sự hiện diện của các từ viết hoa mạnh lập tức kích hoạt bộ lọc và khiến mô hình chặn nhầm một tin nhắn hoàn toàn bình thường.
 ## 5. Thử thách cá nhân
 
-*Đề theo SEED của bạn, cách làm, kết quả, giải thích.*
+1.  Kết quả
+- Độ chính xác: Hai phương pháp có thể đạt F1 tương đương vì cùng sử dụng một mô hình và cùng nhiệm vụ phân loại. Việc bổ sung trường reason không đảm bảo cải thiện khả năng phân loại.
+- Số lượng token và chi phí: JSON thường tiêu tốn nhiều output token hơn vì phải tạo thêm cấu trúc JSON và phần giải thích. Điều này có thể làm tăng chi phí và thời gian phản hồi.
+- Khả năng giải thích: JSON có ưu thế vì cung cấp lý do phân loại, giúp người dùng kiểm tra và hiểu kết quả. Tuy nhiên, cần xử lý trường hợp JSON không hợp lệ để tránh ảnh hưởng đến hệ thống.
+2. Kết luận
+Nếu mục tiêu chỉ là phát hiện SMS spam, đầu ra một từ là lựa chọn phù hợp hơn vì ngắn gọn, tiết kiệm token và dễ xử lý. Ngược lại, JSON phù hợp với những hệ thống cần khả năng giải thích kết quả, hỗ trợ kiểm duyệt hoặc cung cấp thông tin cho người dùng.
 
 ## 6. Phương án cho sản phẩm thật
 
-*Với yêu cầu p95 < 50 ms/tin cho 10 triệu SMS/ngày: chọn phương án nào, dẫn số liệu nào, chấp nhận đánh đổi gì.*
+1. Phân tích các mô hình đạt SLA (p95 < 50 ms)
+
+Dựa vào bảng kết quả thực nghiệm, dưới đây là các phương án đạt tiêu chuẩn thời gian phản hồi:
+
+- 1. BoW + LogReg (tự code):**
+  - p95 latency:0.17 ms/tin (vô cùng nhanh, phù hợp cho hệ thống thời gian thực).
+  - F1-Score (Test):** 0.882 (độ chính xác tương đối khá, tuy nhiên dễ bị đánh lừa bởi các tin nhắn phức tạp hoặc né từ khóa).
+  - Tốc độ xử lý:** 4,070.18 tin/giây.
+
+- 2. BoW + MLP (Deep Learning):**
+  - p95 latency:** 0.43 ms/tin.
+  - F1-Score (Test): 0.933.
+  - Tốc độ xử lý: 34,610.74 tin/giây (tốc độ tối ưu nhờ tận dụng tính toán song song và vector hóa).
+
+- 3b. Encoder (MiniLM) + LogReg:
+  - p95 latency: 41.64 ms/tin (nằm sát giới hạn dưới 50 ms).
+  - F1-Score (Test): 0.952 (độ chính xác cao nhất trong nhóm đạt SLA).
+
+- 3c. Encoder (MiniLM) + MLP head:**
+  - p95 latency: 39.58 ms/tin.
+  - F1-Score (Test): 0.943.
+
+2. Lựa chọn phương án tối ưu cho sản phẩm thực tế
+
+Để đạt cả độ trễ và chất lượng vượt trội, phương án 3b (Encoder MiniLM + LogReg) là lựa chọn tối ưu nhất:
+
+- Lý do: Đạt F1 = 0.952 (tương đương với các mô hình LLM lớn và nhỏ không có prompt phòng thủ) nhưng có độ trễ p95 chỉ 41.64 ms, đáp ứng nghiêm ngặt cam kết dịch vụ (dưới 50 ms).
+- Đánh đổi: Chúng ta phải đánh đổi bằng tài nguyên hạ tầng phần cứng. Mô hình này yêu cầu một máy chủ có GPU hoặc CPU đủ mạnh để chạy mô hình Transformer MiniLM (~90MB) liên tục nhằm sinh Embedding cho từng tin nhắn đầu vào trước khi phân loại.
+
+ 3. Ước tính chi phí một tháng nếu dùng LLM
+
+Nếu sử dụng mô hình LLM phân loại trực tiếp thông qua API với giả định dùng mô hình nhỏ giá rẻ là gpt-6-luna (chi phí: $0.10/1M input tokens và $0.50/1M output tokens):
+
+- Quy mô hệ thống: 10.000.000 SMS/ngày → 300.000.000 SMS/tháng.
+- Cấu hình mỗi tin: 100 token input và 1 token output.
+- Chi phí Input/ngày:
+
+  10.000.000 × 100 = 1.000.000.000 tokens
+
+  Tương đương 1.000 triệu tokens.
+
+  Chi phí = 1.000 × $0.10 = $100/ngày.
+
+- Chi phí Output/ngày:
+
+  10.000.000 × 1 = 10.000.000 tokens
+
+  Tương đương 10 triệu tokens.
+
+  Chi phí = 10 × $0.50 = **$5/ngày**.
+
+- Tổng chi phí một ngày:** $100 + $5 = **$105/ngày**.
+- Tổng chi phí một tháng (30 ngày):**
+
+  $105 × 30 = **$3,150/tháng**.
 
 ## 7. AI log và điều đã học
 
-*Mỗi lần dùng AI: hỏi gì, nhận gì, bạn sửa gì. Sau đó 2–3 câu: điều bạn hiểu ra hôm nay mà trước đó chưa hiểu.*
+Trước đây, tôi nghĩ mô hình có F1-score cao trên tập Test thông thường sẽ hoạt động tốt trong thực tế. Tuy nhiên, qua Stress Test, tôi nhận ra mô hình có thể giảm hiệu năng đáng kể khi gặp những tin nhắn spam được viết tự nhiên hoặc cố tình né từ khóa.
+
+Tôi cũng hiểu rằng lựa chọn mô hình không chỉ dựa vào độ chính xác mà còn phải cân nhắc độ trễ, tốc độ xử lý và chi phí triển khai. Đặc biệt, việc kết hợp mô hình nhẹ với LLM thông qua Router có thể giúp cân bằng giữa chất lượng phân loại và hiệu quả vận hành thực tế
