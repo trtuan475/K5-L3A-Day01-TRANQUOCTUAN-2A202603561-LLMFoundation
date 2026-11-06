@@ -88,12 +88,12 @@ Nếu mục tiêu chỉ là phát hiện SMS spam, đầu ra một từ là lự
 
 Dựa vào bảng kết quả thực nghiệm, dưới đây là các phương án đạt tiêu chuẩn thời gian phản hồi:
 
-- 1. BoW + LogReg (tự code):**
+- 1. BoW + LogReg (tự code):
   - p95 latency:0.17 ms/tin (vô cùng nhanh, phù hợp cho hệ thống thời gian thực).
   - F1-Score (Test):** 0.882 (độ chính xác tương đối khá, tuy nhiên dễ bị đánh lừa bởi các tin nhắn phức tạp hoặc né từ khóa).
   - Tốc độ xử lý:** 4,070.18 tin/giây.
 
-- 2. BoW + MLP (Deep Learning):**
+- 2. BoW + MLP (Deep Learning):
   - p95 latency:** 0.43 ms/tin.
   - F1-Score (Test): 0.933.
   - Tốc độ xử lý: 34,610.74 tin/giây (tốc độ tối ưu nhờ tận dụng tính toán song song và vector hóa).
@@ -133,12 +133,12 @@ Nếu sử dụng mô hình LLM phân loại trực tiếp thông qua API với 
 
   Tương đương 10 triệu tokens.
 
-  Chi phí = 10 × $0.50 = **$5/ngày**.
+  Chi phí = 10 × $0.50 = $5/ngày.
 
-- Tổng chi phí một ngày:** $100 + $5 = **$105/ngày**.
-- Tổng chi phí một tháng (30 ngày):**
+- Tổng chi phí một ngày:** $100 + $5 = $105/ngày.
+- Tổng chi phí một tháng (30 ngày):
 
-  $105 × 30 = **$3,150/tháng**.
+  $105 × 30 = $3,150/tháng.
 
 ## 7. AI log và điều đã học
 
