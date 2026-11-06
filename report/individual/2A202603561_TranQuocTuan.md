@@ -36,11 +36,11 @@ Thực tế: Đường Pareto thực tế bao gồm các mô hình: BoW + LogReg
 
 Nguyên nhân lệch: Do tập dữ liệu thử nghiệm SUB khá nhỏ (40 tin), các mô hình BoW đơn giản nhưng cực kỳ nhanh (độ trễ dưới 1ms) đã thể hiện hiệu năng F1 rất cạnh tranh và chiếm ưu thế tuyệt đối về mặt tốc độ, đẩy các mô hình LLM phức tạp và chậm chạp ra khỏi đường tối ưu Pareto.
 
-## 3. Dự đoán về điểm F1-score của mô hình cơ bản (ml_f1)
+3. Dự đoán về điểm F1-score của mô hình cơ bản (ml_f1)
 
-- **Dự đoán:** Bạn dự đoán F1-score sẽ đạt khoảng **0.85 – 0.93** và Precision sẽ cao hơn Recall do sự mất cân bằng dữ liệu.
-- **Thực tế:** F1-score trên tập Test đạt **0.882**, với chỉ số **Precision đạt tuyệt đối 1.000** (không chặn nhầm tin Ham nào) và **Recall đạt 0.788**.
-- **Nguyên nhân lệch:** Mặc dù khoảng dự đoán F1 của bạn rất chính xác, nhưng mức lệch nằm ở việc Precision đạt tới mức tuyệt đối **1.000** trên tập Test thực tế. Điều này cho thấy mô hình Logistic Regression tự code của bạn đã thiết lập một ranh giới phân loại rất an toàn (chỉ những tin nhắn có đặc trưng spam cực kỳ rõ ràng mới bị gán nhãn 1), dẫn đến việc bỏ sót khá nhiều tin nhắn spam thực tế (Recall thấp hơn nhiều) nhưng đảm bảo độ chính xác tuyệt đối khi đã ra quyết định chặn.
+Dự đoán: Bạn dự đoán F1-score sẽ đạt khoảng 0.85 – 0.93 và Precision sẽ cao hơn Recall do sự mất cân bằng dữ liệu.
+- Thực tế: F1-score trên tập Test đạt 0.882, với chỉ số **Precision đạt tuyệt đối 1.000 (không chặn nhầm tin Ham nào) và Recall đạt 0.788.
+- Nguyên nhân lệch: Mặc dù khoảng dự đoán F1 của bạn rất chính xác, nhưng mức lệch nằm ở việc Precision đạt tới mức tuyệt đối 1.000 trên tập Test thực tế. Điều này cho thấy mô hình Logistic Regression tự code của bạn đã thiết lập một ranh giới phân loại rất an toàn (chỉ những tin nhắn có đặc trưng spam cực kỳ rõ ràng mới bị gán nhãn 1), dẫn đến việc bỏ sót khá nhiều tin nhắn spam thực tế (Recall thấp hơn nhiều) nhưng đảm bảo độ chính xác tuyệt đối khi đã ra quyết định chặn.
 
 ## 4. Phân tích 50 case khó
 
